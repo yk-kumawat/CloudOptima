@@ -10,9 +10,7 @@ dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const FLASK_ENV = process.env.FLASK_URL || "http://localhost:5000/predict";
-// Automatically fix the URL if the user forgot to add "/predict" at the end in their Render environment variables
-const FLASK_URL = FLASK_ENV.endsWith("/predict") ? FLASK_ENV : `${FLASK_ENV.replace(/\/$/, "")}/predict`;
+const FLASK_URL = process.env.FLASK_URL || "http://localhost:5000/predict";
 
 app.use(cors());
 connectDB();
