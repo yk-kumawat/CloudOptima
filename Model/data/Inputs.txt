@@ -1,0 +1,100 @@
+Input 1: GCP Overutilized Scale-Up
+{
+  "cpu_usage": 90.0,
+  "memory_usage": 88.0,
+  "net_io": 600.0,
+  "disk_io": 750.0,
+  "cloud_provider": "GCP",
+  "region": "US",
+  "vm_type": "n1-standard-1",
+  "vCPU": 1,
+  "RAM_GB": 3.75,
+  "price_per_hour": 0.0475,
+  "latency_ms": 35.0,
+  "throughput": 2000.0
+}
+
+
+Input 2: GCP Overutilized Scale-Up
+{
+  "cpu_usage": 97.7,
+  "memory_usage": 98.76,
+  "net_io": 364.17,
+  "disk_io": 582.49,
+  "cloud_provider": "GCP",
+  "region": "us-west",
+  "vm_type": "B1s",
+  "vCPU": 1,
+  "RAM_GB": 1.0,
+  "price_per_hour": 0.012,
+  "latency_ms": 211.27,
+  "throughput": 1935.75
+}
+
+
+Input 3: AWS Optimal
+{
+  "cpu_usage": 79.94,
+  "memory_usage": 60.26,
+  "net_io": 240.9,
+  "disk_io": 915.72,
+  "cloud_provider": "AWS",
+  "region": "asia-south",
+  "vm_type": "n1-standard-1",
+  "vCPU": 1,
+  "RAM_GB": 3.75,
+  "price_per_hour": 0.0475,
+  "latency_ms": 229.71,
+  "throughput": 1351.87
+}
+
+
+Input 4: AWS Underutilized scale-down
+{
+  "cpu_usage": 20.0,
+  "memory_usage": 25.0,
+  "net_io": 150.0,
+  "disk_io": 200.0,
+  "cloud_provider": "AWS",
+  "region": "US",
+  "vm_type": "t3.medium",
+  "vCPU": 2,
+  "RAM_GB": 4,
+  "price_per_hour": 0.0416,
+  "latency_ms": 45.0,
+  "throughput": 900.0
+}
+
+
+Input 5: Azure Optimal
+{
+  "cpu_usage": 55.0,
+  "memory_usage": 60.0,
+  "net_io": 400.0,
+  "disk_io": 450.0,
+  "cloud_provider": "Azure",
+  "region": "Asia",
+  "vm_type": "B2s",
+  "vCPU": 2,
+  "RAM_GB": 4,
+  "price_per_hour": 0.0464,
+  "latency_ms": 50.0,
+  "throughput": 1500.0
+}
+
+
+Input 6: Overutilized Scale-up
+{
+  "cpu_usage": 65.0,
+  "memory_usage": 70.0,
+  "net_io": 900.0,
+  "disk_io": 850.0,
+  "cloud_provider": "GCP",
+  "region": "Asia",
+  "vm_type": "n1-standard-1",
+  "vCPU": 1,
+  "RAM_GB": 3.75,
+  "price_per_hour": 0.0520,
+  "latency_ms": 60.0,
+  "throughput": 2200.0
+}

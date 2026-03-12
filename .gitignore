@@ -1,0 +1,16 @@
+# Node
+node_modules/
+dist/
+build/
+.env
+
+# Python
+Model/venv/
+__pycache__/
+*.pyc
+
+# IDEs and Misc
+.vscode/
+.DS_Store
+Client/dist/
+Server/dist/

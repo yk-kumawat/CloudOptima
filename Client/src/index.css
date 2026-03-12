@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Custom Theme */
+@theme {
+  --color-primary: #135bec;
+  --color-accent-green: #10b981;
+  --color-background-light: #f6f6f8;
+  --color-background-dark: #0a0c12;
+  --color-card-dark: #161b26;
+  --color-border-dark: #21262e;
+
+  --font-display: "Manrope", sans-serif;
+}
