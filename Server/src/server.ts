@@ -9,8 +9,8 @@ import optimizationRoutes from "./routes/optimizationRoutes.js";
 dotenv.config();
 
 const app = express();
-const PORT = 3000;
-const FLASK_URL = "http://localhost:5000/predict";
+const PORT = process.env.PORT || 3000;
+const FLASK_URL = process.env.FLASK_URL || "http://localhost:5000/predict";
 
 app.use(cors());
 connectDB();
