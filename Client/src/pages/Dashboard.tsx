@@ -15,7 +15,7 @@ const ColorizeText: React.FC<{ text: string }> = ({ text }) => {
   // 3. Currency (₹ symbol followed by space and numbers/commas/dots)
   // 4. Cloud providers (AWS, Azure, GCP)
   const regex = /([a-z0-9]+\.[a-z0-9]+|[a-z0-9]+-[a-z0-9]+-[a-z0-9]+|\d+(?:\.\d+)?%|₹\s[\d,]+(?:\.\d+)?|AWS|Azure|GCP)/g;
-  
+
   const parts = text.split(regex);
   return (
     <>
@@ -112,12 +112,12 @@ const Dashboard: React.FC = () => {
       setIsLoading(true);
       const parsedData = JSON.parse(jsonConfig);
       console.log("Sending data to BFF:", parsedData);
-      
+
       const response = await axios.post(`${API_URL}/predict`, parsedData);
       console.log("Success! Received results from BFF:", response.data);
-      
+
       setPredictionResult(response.data);
-      
+
       // Update UI usage bars if the model returns new utilization metrics
       if (response.data.predicted_utilization) {
         handleFormChange("cpu_usage", Math.round(response.data.predicted_utilization));
@@ -144,7 +144,7 @@ const Dashboard: React.FC = () => {
         navigate("/login");
         return;
       }
-      
+
       const payload = {
         name: `Optimization - ${new Date().toLocaleDateString()}`,
         provider: predictionResult.current_config.provider,
@@ -166,8 +166,8 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  const displayUtilization = predictionResult?.predicted_utilization 
-    ? Math.round(predictionResult.predicted_utilization) 
+  const displayUtilization = predictionResult?.predicted_utilization
+    ? Math.round(predictionResult.predicted_utilization)
     : 0;
 
   return (
@@ -190,21 +190,19 @@ const Dashboard: React.FC = () => {
               <div className="flex bg-slate-100 dark:bg-slate-900 p-1 rounded-lg border border-slate-200 dark:border-border-dark">
                 <button
                   onClick={() => setViewMode("form")}
-                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${
-                    viewMode === "form"
+                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === "form"
                       ? "bg-primary text-white shadow-sm"
                       : "text-slate-500 dark:text-slate-400"
-                  }`}
+                    }`}
                 >
                   Form
                 </button>
                 <button
                   onClick={() => setViewMode("json")}
-                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${
-                    viewMode === "json"
+                  className={`px-4 py-1.5 text-xs font-bold rounded-md transition-all ${viewMode === "json"
                       ? "bg-primary text-white shadow-sm"
                       : "text-slate-500 dark:text-slate-400"
-                  }`}
+                    }`}
                 >
                   JSON
                 </button>
@@ -218,7 +216,7 @@ const Dashboard: React.FC = () => {
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Cloud Provider
                     </label>
-                    <select 
+                    <select
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-border-dark text-slate-900 dark:text-slate-200 rounded-lg p-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                       value={getFormValue("cloud_provider")}
                       onChange={(e) => {
@@ -227,7 +225,7 @@ const Dashboard: React.FC = () => {
                           current["cloud_provider"] = e.target.value;
                           current["vm_type"] = ""; // Reset VM type
                           setJsonConfig(JSON.stringify(current, null, 2));
-                        } catch (err) {}
+                        } catch (err) { }
                       }}
                     >
                       <option value="" disabled hidden>Select Provider</option>
@@ -240,7 +238,7 @@ const Dashboard: React.FC = () => {
                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                       Region
                     </label>
-                    <select 
+                    <select
                       className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-border-dark text-slate-900 dark:text-slate-200 rounded-lg p-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none"
                       value={getFormValue("region")}
                       onChange={(e) => handleFormChange("region", e.target.value)}
@@ -256,7 +254,7 @@ const Dashboard: React.FC = () => {
                   <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     VM Type
                   </label>
-                  <select 
+                  <select
                     className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-border-dark text-slate-900 dark:text-slate-200 rounded-lg p-2 text-sm focus:ring-1 focus:ring-primary focus:border-primary outline-none disabled:opacity-50"
                     value={getFormValue("vm_type")}
                     onChange={(e) => handleFormChange("vm_type", e.target.value)}
@@ -383,12 +381,11 @@ const Dashboard: React.FC = () => {
               </div>
             )}
 
-            <button 
+            <button
               onClick={handleOptimize}
               disabled={isLoading}
-              className={`mt-8 w-full h-12 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 ${
-                isLoading ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary hover:bg-blue-600 shadow-primary/20'
-              }`}
+              className={`mt-8 w-full h-12 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 active:scale-95 ${isLoading ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary hover:bg-blue-600 shadow-primary/20'
+                }`}
             >
               <span className={`material-symbols-outlined text-xl ${isLoading ? 'animate-spin' : ''}`}>
                 {isLoading ? 'autorenew' : 'rocket_launch'}
@@ -419,7 +416,7 @@ const Dashboard: React.FC = () => {
                 </span>{" "}
                 Export PDF
               </button>
-              <button 
+              <button
                 onClick={handleSave}
                 disabled={!predictionResult}
                 className={`flex-1 md:flex-none px-4 py-2 text-white text-sm font-bold rounded-lg flex items-center justify-center gap-2 shadow-lg transition-all
@@ -439,7 +436,7 @@ const Dashboard: React.FC = () => {
               <span className="text-xs font-bold text-slate-500 uppercase">
                 Utilization
               </span>
-              
+
               {/* Circular Progress Bar */}
               <div className="w-24 h-24 relative flex items-center justify-center">
                 <svg className="w-full h-full -rotate-90 transform" viewBox="0 0 100 100">
@@ -464,9 +461,8 @@ const Dashboard: React.FC = () => {
                     strokeDashoffset={264 - (displayUtilization / 100) * 264}
                     strokeLinecap="round"
                     fill="transparent"
-                    className={`transition-all duration-700 ease-out ${
-                      displayUtilization < 50 ? 'text-orange-500' : displayUtilization <= 80 ? 'text-green-500' : 'text-red-500'
-                    }`}
+                    className={`transition-all duration-700 ease-out ${displayUtilization < 50 ? 'text-orange-500' : displayUtilization <= 80 ? 'text-green-500' : 'text-red-500'
+                      }`}
                   />
                 </svg>
                 <span className="absolute text-xl font-black text-slate-900 dark:text-white">
@@ -498,8 +494,8 @@ const Dashboard: React.FC = () => {
           {/* ARBITRAGE PANEL */}
           <div className="bg-white dark:bg-card-dark border border-slate-200 dark:border-accent-green/30 rounded-2xl p-6 shadow-xl shadow-slate-300 dark:shadow-none">
             <h3 className="text-lg font-bold mb-4">
-              {predictionResult?.optimization_status === "Optimal" 
-                ? "Current Setup Insight" 
+              {predictionResult?.optimization_status === "Optimal"
+                ? "Current Setup Insight"
                 : "Optimization Recommendation"}
             </h3>
             <p className="mb-10 text-sm text-slate-500">
@@ -528,8 +524,8 @@ const Dashboard: React.FC = () => {
                     <td className="font-medium">{predictionResult?.current_config?.region || "---"}</td>
                     <td className="font-medium text-slate-600 dark:text-slate-300">{predictionResult?.current_config?.vm_type || "---"}</td>
                     <td className="font-medium">
-                      {typeof predictionResult?.predicted_utilization === 'number' 
-                        ? `${predictionResult.predicted_utilization}%` 
+                      {typeof predictionResult?.predicted_utilization === 'number'
+                        ? `${predictionResult.predicted_utilization}%`
                         : "---"}
                     </td>
                     <td className="font-bold">{predictionResult?.predicted_monthly_cost || "---"}</td>
@@ -544,8 +540,8 @@ const Dashboard: React.FC = () => {
                         {predictionResult?.recommended_instance}
                       </td>
                       <td className="font-bold text-accent-green">
-                        {typeof predictionResult?.optimized_util === 'number' 
-                          ? `${predictionResult.optimized_util}%` 
+                        {typeof predictionResult?.optimized_util === 'number'
+                          ? `${predictionResult.optimized_util}%`
                           : "---"}
                       </td>
                       <td className="text-accent-green font-black">

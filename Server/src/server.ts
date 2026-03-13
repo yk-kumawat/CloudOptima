@@ -31,11 +31,11 @@ app.post("/api/predict", async (req, res) => {
     res.json(response.data);
   } catch (error: any) {
     console.error("Error communicating with Flask:", error.message);
-    
+
     // Check if the response is HTML (e.g. Render 502/404 sleeping service page)
-    const isHtml = error.response?.headers?.['content-type']?.includes('text/html') || 
-                   (typeof error.response?.data === 'string' && error.response.data.includes('<!DOCTYPE html>'));
-    
+    const isHtml = error.response?.headers?.['content-type']?.includes('text/html') ||
+      (typeof error.response?.data === 'string' && error.response.data.includes('<!DOCTYPE html>'));
+
     let detailsMessage = error.response?.data || error.message;
     let errorMessage = "Error communicating with ML Model";
 

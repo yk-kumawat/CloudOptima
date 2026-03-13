@@ -16,6 +16,10 @@ NUMERIC_FIELDS = [
     "latency_ms", "throughput"
 ]
 
+@app.route("/", methods=["GET"])
+def health_check():
+    return jsonify({"status": "active", "message": "ML Model is running"})
+
 @app.route("/predict", methods=["POST"])
 def predict():
 
