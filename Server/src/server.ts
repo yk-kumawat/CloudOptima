@@ -31,9 +31,22 @@ app.post("/api/predict", async (req, res) => {
     res.json(response.data);
   } catch (error: any) {
     console.error("Error communicating with Flask:", error.message);
+    
+    // Check if the response is HTML (e.g. Render 502/404 sleeping service page)
+    const isHtml = error.response?.headers?.['content-type']?.includes('text/html') || 
+                   (typeof error.response?.data === 'string' && error.response.data.includes('<!DOCTYPE html>'));
+    
+    let detailsMessage = error.response?.data || error.message;
+    let errorMessage = "Error communicating with ML Model";
+
+    if (isHtml) {
+      detailsMessage = "The ML Model service is currently sleeping or unavailable. Render free tier takes 1-2 minutes to wake up.";
+      errorMessage = "ML Model is waking up. Please wait a minute and try again.";
+    }
+
     res.status(error.response?.status || 500).json({
-      error: "Error communicating with ML Model",
-      details: error.response?.data || error.message,
+      error: errorMessage,
+      details: detailsMessage,
     });
   }
 });
