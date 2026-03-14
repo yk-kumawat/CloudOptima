@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { API_URL } from '../config';
 import toast from 'react-hot-toast';
+import NoProfilePicture from '../assets/NoProfilePicture.jpeg';
 
 const UserProfile: React.FC = () => {
   const navigate = useNavigate();
@@ -153,8 +154,10 @@ const UserProfile: React.FC = () => {
                 <div className="relative group">
                   <div
                     className="bg-center bg-no-repeat aspect-square bg-cover rounded-full ring-4 ring-primary/20 size-32 lg:size-40 shadow-xl border-4 border-white dark:border-slate-900"
-                    style={{ backgroundImage: `url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.fullName || 'User'}')` }}
-                  ></div>
+                    // style={{ backgroundImage: `url('https://api.dicebear.com/7.x/avataaars/svg?seed=${user?.fullName || 'User'}')` }}
+                  >
+                    <img src={NoProfilePicture} alt="Profile Picture" className="w-full h-full object-cover rounded-full" />
+                  </div>
                   <button className="absolute flex justify-center items-center h-8 w-8 bottom-2 right-2 bg-primary text-white rounded-full shadow-lg hover:scale-110 transition-transform cursor-pointer border-2 border-white dark:border-slate-900">
                     <span className="material-symbols-outlined text-sm font-bold">add</span>
                   </button>
