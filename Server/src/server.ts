@@ -28,44 +28,49 @@ const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
 
 // Bridge endpoint to Flask
 app.post("/api/predict", async (req, res) => {
-  const MAX_RETRIES = 6;
-  const RETRY_DELAY_MS = 15000; // 15 seconds — Render rate-limit windows are short
-
-  let attempt = 0;
+  const RETRY_DELAY_MS = 60000; // 60 seconds — wait for Render to wake up / clear rate limit
   let lastError: any;
 
-  while (attempt < MAX_RETRIES) {
-    try {
-      console.log(`Forwarding request to Flask (Attempt ${attempt + 1}/${MAX_RETRIES}):`, req.body);
-      const response = await axios.post(FLASK_URL, req.body);
-      return res.json(response.data);
-    } catch (error: any) {
-      lastError = error;
-      const status = error.response?.status;
-      const isHtml = error.response?.headers?.['content-type']?.includes('text/html');
+  // Attempt 1: first try
+  try {
+    console.log("Forwarding request to Flask (Attempt 1/2):", req.body);
+    const response = await axios.post(FLASK_URL, req.body);
+    return res.json(response.data);
+  } catch (error: any) {
+    lastError = error;
+    const status = error.response?.status;
+    const isHtml = error.response?.headers?.['content-type']?.includes('text/html');
 
-      console.error(`Error communicating with Flask (Attempt ${attempt + 1}):`, error.message);
+    console.error("Error communicating with Flask (Attempt 1):", error.message);
 
-      // Retry on 5xx errors, 429, HTML responses (Render wake-up pages), or network errors (no status)
-      if (!status || status >= 500 || status === 429 || isHtml) {
-        if (status === 429) {
-          console.warn(`Rate limited by Render (429). Waiting ${RETRY_DELAY_MS / 1000}s before retrying...`);
-        } else {
-          console.log(`Model is sleeping/busy. Waiting ${RETRY_DELAY_MS / 1000}s before retrying...`);
-        }
-        attempt++;
-        if (attempt < MAX_RETRIES) {
-          await delay(RETRY_DELAY_MS);
-          continue;
-        }
+    // Only retry on retriable errors: 429, 5xx, HTML wake-up page, or no response (network error)
+    if (!status || status >= 500 || status === 429 || isHtml) {
+      if (status === 429) {
+        console.warn(`Rate limited by Render (429). Waiting ${RETRY_DELAY_MS / 1000}s before retrying...`);
+      } else {
+        console.log(`Model is sleeping/busy. Waiting ${RETRY_DELAY_MS / 1000}s before retrying...`);
       }
-      
-      // If it's a 4xx error (other than 429) or max retries reached, break and return error
-      break;
+      await delay(RETRY_DELAY_MS);
+    } else {
+      // Non-retriable 4xx — fail immediately
+      return res.status(503).json({
+        error: "Error communicating with ML Model",
+        details: error.response?.data || error.message,
+      });
     }
   }
 
-  // Handle final error if all retries failed or loop broken
+  // Attempt 2: one retry after the 60s delay
+  try {
+    console.log("Forwarding request to Flask (Attempt 2/2):", req.body);
+    const response = await axios.post(FLASK_URL, req.body);
+    return res.json(response.data);
+  } catch (error: any) {
+    lastError = error;
+    console.error("Error communicating with Flask (Attempt 2 — final):", error.message);
+  }
+
+  // Handle final error
   const isHtml = lastError.response?.headers?.['content-type']?.includes('text/html') ||
     (typeof lastError.response?.data === 'string' && lastError.response.data.includes('<!DOCTYPE html>'));
   const wasRateLimited = lastError.response?.status === 429;
@@ -74,14 +79,14 @@ app.post("/api/predict", async (req, res) => {
   let errorMessage = "Error communicating with ML Model";
 
   if (isHtml) {
-    detailsMessage = "The ML Model service is still waking up. It took longer than 90 seconds.";
+    detailsMessage = "The ML Model service is still waking up. It took longer than 60 seconds.";
     errorMessage = "ML Model is waking up. Please try again.";
   } else if (wasRateLimited) {
     detailsMessage = "Render's Free Tier has temporarily rate-limited the server. Please wait a few minutes before trying again.";
     errorMessage = "Render Free Tier Rate Limit Hit";
   }
 
-  // Always return 503 so the client gets a consistent JSON error, never a raw Render HTML page
+  // Always return 503 so the client gets a consistent JSON error shape
   res.status(503).json({
     error: errorMessage,
     details: detailsMessage,
