@@ -23,58 +23,64 @@ app.get("/", (req, res) => {
   res.send("BFF Server running with TypeScript + ES Modules");
 });
 
+// Helper for delay
+const delay = (ms: number) => new Promise(res => setTimeout(res, ms));
+
 // Bridge endpoint to Flask
 app.post("/api/predict", async (req, res) => {
-  try {
-    console.log("Forwarding request to Flask:", req.body);
-    const response = await axios.post(FLASK_URL, req.body);
-    res.json(response.data);
-  } catch (error: any) {
-    console.error("Error communicating with Flask:", error.message);
+  const MAX_RETRIES = 6;
+  const RETRY_DELAY_MS = 10000; // 10 seconds
 
-    // Check if the response is HTML (e.g. Render 502/404 sleeping service page)
-    const isHtml = error.response?.headers?.['content-type']?.includes('text/html') ||
-      (typeof error.response?.data === 'string' && error.response.data.includes('<!DOCTYPE html>'));
+  let attempt = 0;
+  let lastError: any;
 
-    let detailsMessage = error.response?.data || error.message;
-    let errorMessage = "Error communicating with ML Model";
+  while (attempt < MAX_RETRIES) {
+    try {
+      console.log(`Forwarding request to Flask (Attempt ${attempt + 1}/${MAX_RETRIES}):`, req.body);
+      const response = await axios.post(FLASK_URL, req.body);
+      return res.json(response.data);
+    } catch (error: any) {
+      lastError = error;
+      console.error(`Error communicating with Flask (Attempt ${attempt + 1}):`, error.message);
 
-    if (isHtml) {
-      detailsMessage = "The ML Model service is currently sleeping or unavailable. Render free tier takes 1-2 minutes to wake up.";
-      errorMessage = "ML Model is waking up. Please wait a minute and try again.";
-    } else if (error.response?.status === 429) {
-      detailsMessage = "Render's free tier cannot handle concurrent requests while waking up. Please wait about 30-50 seconds for it to fully wake up and try again.";
-      errorMessage = "ML Model is busy waking up.";
+      const status = error.response?.status;
+      const isHtml = error.response?.headers?.['content-type']?.includes('text/html');
+
+      // Retry on 5xx errors, 429, HTML responses (Render wake-up pages), or network errors (no status)
+      if (!status || status >= 500 || status === 429 || isHtml) {
+        attempt++;
+        if (attempt < MAX_RETRIES) {
+          console.log(`Model is sleeping/busy. Waiting ${RETRY_DELAY_MS / 1000}s before retrying...`);
+          await delay(RETRY_DELAY_MS);
+          continue;
+        }
+      }
+      
+      // If it's a 4xx error (other than 429) or max retries reached, break and return error
+      break;
     }
-
-    res.status(error.response?.status || 500).json({
-      error: errorMessage,
-      details: detailsMessage,
-    });
   }
+
+  // Handle final error if all retries failed or loop broken
+  const isHtml = lastError.response?.headers?.['content-type']?.includes('text/html') ||
+    (typeof lastError.response?.data === 'string' && lastError.response.data.includes('<!DOCTYPE html>'));
+
+  let detailsMessage = lastError.response?.data || lastError.message;
+  let errorMessage = "Error communicating with ML Model";
+
+  if (isHtml) {
+    detailsMessage = "The ML Model service is still waking up. It took longer than 60 seconds.";
+    errorMessage = "ML Model is waking up. Please try again.";
+  } else if (lastError.response?.status === 429) {
+    detailsMessage = "Render's Free Tier has temporarily rate-limited the server. Please wait a few minutes before trying again.";
+    errorMessage = "Render Free Tier Rate Limit Hit";
+  }
+
+  res.status(lastError.response?.status || 500).json({
+    error: errorMessage,
+    details: detailsMessage,
+  });
 });
-
-// Keep ML Model awake to prevent Render free tier spin down
-const KEEP_ALIVE_INTERVAL = 14 * 60 * 1000; // 14 minutes
-const FLASK_BASE_URL = FLASK_URL.endsWith("/predict") 
-  ? FLASK_URL.replace("/predict", "") 
-  : FLASK_URL;
-
-const pingMLModel = async () => {
-  try {
-    console.log(`[Keep-Alive] Pinging ML Model at ${FLASK_BASE_URL}`);
-    await axios.get(FLASK_BASE_URL);
-    console.log("[Keep-Alive] ML Model ping successful.");
-  } catch (error: any) {
-    console.error("[Keep-Alive] Error pinging ML Model:", error.message);
-  }
-};
-
-// Ping immediately on startup to wake it up if it's sleeping
-pingMLModel();
-
-// Then set the interval for every 14 minutes
-setInterval(pingMLModel, KEEP_ALIVE_INTERVAL);
 
 app.listen(PORT, () => {
   console.log(`BFF Server running on http://localhost:${PORT}`);
