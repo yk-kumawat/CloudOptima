@@ -125,8 +125,23 @@ const Dashboard: React.FC = () => {
 
       toast.success("Optimization Complete!");
     } catch (error: any) {
-      console.error("Optimization failed:", error.response?.data || error.message);
-      toast.error(error.response?.data?.error || error.message);
+      const errData = error.response?.data;
+      const status = error.response?.status;
+      console.error("Optimization failed:", errData || error.message);
+
+      if (status === 429 || errData?.error === "Render Free Tier Rate Limit Hit") {
+        toast.error(
+          "⚠️ Rate limit reached on the free server. Please wait 1–2 minutes before trying again.",
+          { duration: 6000 }
+        );
+      } else if (errData?.error === "ML Model is waking up. Please try again.") {
+        toast.error(
+          "🌙 The AI model is still waking up (took >60s). Please try again in a moment.",
+          { duration: 6000 }
+        );
+      } else {
+        toast.error(errData?.error || errData?.details || error.message || "Optimization request failed.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -393,7 +408,7 @@ const Dashboard: React.FC = () => {
               <span className={`material-symbols-outlined text-xl ${isLoading ? 'animate-spin' : ''}`}>
                 {isLoading ? 'autorenew' : 'rocket_launch'}
               </span>
-              {isLoading ? 'Processing AI...' : 'Run AI Optimization'}
+              {isLoading ? 'Contacting AI Model (may take ~30s)...' : 'Run AI Optimization'}
             </button>
           </section>
         </div>
