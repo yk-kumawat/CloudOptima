@@ -42,6 +42,9 @@ app.post("/api/predict", async (req, res) => {
     if (isHtml) {
       detailsMessage = "The ML Model service is currently sleeping or unavailable. Render free tier takes 1-2 minutes to wake up.";
       errorMessage = "ML Model is waking up. Please wait a minute and try again.";
+    } else if (error.response?.status === 429) {
+      detailsMessage = "Render's free tier cannot handle concurrent requests while waking up. Please wait about 30-50 seconds for it to fully wake up and try again.";
+      errorMessage = "ML Model is busy waking up.";
     }
 
     res.status(error.response?.status || 500).json({
