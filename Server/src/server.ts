@@ -57,7 +57,7 @@ const FLASK_BASE_URL = FLASK_URL.endsWith("/predict")
   ? FLASK_URL.replace("/predict", "") 
   : FLASK_URL;
 
-setInterval(async () => {
+const pingMLModel = async () => {
   try {
     console.log(`[Keep-Alive] Pinging ML Model at ${FLASK_BASE_URL}`);
     await axios.get(FLASK_BASE_URL);
@@ -65,7 +65,13 @@ setInterval(async () => {
   } catch (error: any) {
     console.error("[Keep-Alive] Error pinging ML Model:", error.message);
   }
-}, KEEP_ALIVE_INTERVAL);
+};
+
+// Ping immediately on startup to wake it up if it's sleeping
+pingMLModel();
+
+// Then set the interval for every 14 minutes
+setInterval(pingMLModel, KEEP_ALIVE_INTERVAL);
 
 app.listen(PORT, () => {
   console.log(`BFF Server running on http://localhost:${PORT}`);
