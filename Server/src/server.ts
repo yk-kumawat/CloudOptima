@@ -51,6 +51,22 @@ app.post("/api/predict", async (req, res) => {
   }
 });
 
+// Keep ML Model awake to prevent Render free tier spin down
+const KEEP_ALIVE_INTERVAL = 14 * 60 * 1000; // 14 minutes
+const FLASK_BASE_URL = FLASK_URL.endsWith("/predict") 
+  ? FLASK_URL.replace("/predict", "") 
+  : FLASK_URL;
+
+setInterval(async () => {
+  try {
+    console.log(`[Keep-Alive] Pinging ML Model at ${FLASK_BASE_URL}`);
+    await axios.get(FLASK_BASE_URL);
+    console.log("[Keep-Alive] ML Model ping successful.");
+  } catch (error: any) {
+    console.error("[Keep-Alive] Error pinging ML Model:", error.message);
+  }
+}, KEEP_ALIVE_INTERVAL);
+
 app.listen(PORT, () => {
   console.log(`BFF Server running on http://localhost:${PORT}`);
 });
