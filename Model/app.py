@@ -20,6 +20,7 @@ NUMERIC_FIELDS = [
 def health_check():
     return jsonify({"status": "active", "message": "ML Model is running"})
 
+
 @app.route("/predict", methods=["POST"])
 def predict():
 
